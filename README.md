@@ -13,8 +13,6 @@ We strongly recommend that you use Conda as a package manager.
 # create virtual environment
 conda create -n GRFusion python=3.10
 conda activate GRFusion
-# select pytorch version yourself
-# install SegMiF requirements
 pip install -r requirements.txt
 ```
 
