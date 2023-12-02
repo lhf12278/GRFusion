@@ -1,16 +1,54 @@
-The full code will be uploaded when we get it organized!
-
-#  GRFusion
-The code of "Generation and Reconmbination for Multifocus Image Fusion with Free Number of Inputs".
-
-- [*[ArXiv]*](https://arxiv.org/abs/2309.04657)
+#  Generation and Reconmbination for Multifocus Image Fusion with Free Number of Inputs
+- [paper](https://arxiv.org/abs/2309.04657)
 
 ---
-
+## Pipeline
 ![Abstract](assets/overview.png)
-
 ---
 
+## Recommended Environment
+We strongly recommend that you use Conda as a package manager.
+
+```shell
+# create virtual environment
+conda create -n GRFusion python=3.10
+conda activate GRFusion
+# select pytorch version yourself
+# install SegMiF requirements
+pip install -r requirements.txt
+```
+
+## Prepare Datasets
+Download the Lytro dataset from [here](https://mansournejati.ece.iut.ac.ir/content/lytro-multi-focus-dataset), MFI-WHU dataset from [here](https://github.com/HaoZhang1018/MFI-WHU) and MFFW dataset form [here](https://www.semanticscholar.org/paper/MFFW%3A-A-new-dataset-for-multi-focus-image-fusion-Xu-Wei/4c0658f338849284ee4251a69b3c323908e62b45)
+
+Organize them in `your dataset root dir` folder as follows:
+```
+|-- your dataset root dir/
+|   |-- <Train>/
+|       |-- 001.png
+|       |-- 002.png
+|       |-- 003.png
+|
+|   |-- <Test>/
+|       |-- Lytro
+|            |-- lytro-01-A.jpg
+|            |-- lytro-01-B.jpg
+|            |-- Triple Series
+|                |-- lytro-01-A.jpg
+|                |-- lytro-01-B.jpg
+|                |-- lytro-01-C.jpg
+|       |-- MFI-WHU
+|            |-- MFI-WHU_01_A.jpg
+|            |-- MFI-WHU_01_B.jpg
+|       |-- MFFW
+|            |-- MFFW2
+|                |-- MFFW2_01_A.jpg
+|                |-- MFFW2_01_B.jpg
+|            |-- MFFW3
+|                |-- MFFW3_01_A.jpg
+|                |-- MFFW3_01_B.jpg
+|                |-- MFFW3_01_C.jpg
+```
 
 ## To Train
 The training code for both the focus detection and fusion parts is provided here.
@@ -28,30 +66,12 @@ If you want to test the focus detection network : Run "**CUDA_VISIBLE_DEVICES=0 
 If you want to test the fusion network : Run "**CUDA_VISIBLE_DEVICES=0 python test_fusion.py**".
 
 
-## Recommended Environment
-We strongly recommend that you use Conda as a package manager.
-
-```shell
-# create virtual environment
-conda create -n GRFusion python=3.10
-conda activate GRFusion
-# select pytorch version yourself
-# install SegMiF requirements
-pip install -r requirements.txt
-```
-
-## Test datasets download
-Lytro, MFI-WHU, and MFFW Dataset can be downloaded in 
-- [*[Lytro]*](https://mansournejati.ece.iut.ac.ir/content/lytro-multi-focus-dataset)
-- [*[MFI-WHU]*](https://github.com/HaoZhang1018/MFI-WHU)
-- [*[MFFW]*](https://www.semanticscholar.org/paper/MFFW%3A-A-new-dataset-for-multi-focus-image-fusion-Xu-Wei/4c0658f338849284ee4251a69b3c323908e62b45)
-
 ## Our results
 ![Abstract](assets/results3.png)
 
-## Citation
+## Contact
 
-If this work has been helpful to you, please feel free to cite our paper!
+If you have any questions, please feel free to contact me. (wd97@stu.kust.edu.cn).
 
 
 
