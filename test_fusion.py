@@ -1,11 +1,11 @@
 import time
 from FDNet import U_Net1
-from FusionNet import Encoder, Decoder
+from FusionNet1 import Encoder, Decoder
 from Dataloader import *
 from BaseModle import *
 
 # print(torch.cuda.current_device())
-# os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 # ids = torch.cuda.device_count()
 device = torch.device('cuda:0')       # CUDA:0
 
@@ -15,11 +15,11 @@ use_gpu = torch.cuda.is_available()
 # use_gpu = False
 
 encoder = Encoder()
-encoder_path = "./checkpoints/Encoder.pth"
+encoder_path = "./checkpoints/Encoder0.05.pth"
 use_gpu = torch.cuda.is_available()
 
 decoder = Decoder()
-decoder_path = "./checkpoints/Decoder.pth"
+decoder_path = "./checkpoints/Decoder0.05.pth"
 use_gpu = torch.cuda.is_available()
 
 if use_gpu:
@@ -53,8 +53,6 @@ def fusion_color(file_path, type, save_path, couples, img_nums):
                 tic = time.time()
                 path1 = file_path + '/lytro_{}{}_A.'.format(num // 10, num % 10) + type  # for the "Lytro" dataset
                 path2 = file_path + '/lytro_{}{}_B.'.format(num // 10, num % 10) + type  # for the "Lytro" dataset
-                # path1 = file_path + '/MFI-WHU_{}{}_A.'.format(num // 10, num % 10) + type  # for the "MFFW"dataset
-                # path2 = file_path + '/MFI-WHU_{}{}_B.'.format(num // 10, num % 10) + type  # for the "MFFW" dataset
                 img1 = Image.open(path1).convert('RGB')
                 img2 = Image.open(path2).convert('RGB')
                 img1_read = np.array(img1)
@@ -158,10 +156,6 @@ def fusion_color(file_path, type, save_path, couples, img_nums):
                 out2 = to_binary(confidence_map2)
                 out3 = to_binary(confidence_map3)
 
-                out1 = fill(out1)
-                out2 = fill(out2)
-                out3 = fill(out3)
-
                 unconsis = find_unconsist(out1, out2, out3)
 
                 fe_img1 = encoder(img1)
@@ -177,15 +171,14 @@ def fusion_color(file_path, type, save_path, couples, img_nums):
 
                 toc = time.time()
                 print('end Lytro_{}{}'.format(num // 10, num % 10), ', time:{}'.format(toc - tic))
-
     elif img_nums == 4:
         with torch.no_grad():
             for num in range(1, couples + 1):
                 tic = time.time()
-                path1 = file_path + '/mffw-{}{}-A.'.format(num // 10, num % 10) + type
-                path2 = file_path + '/mffw-{}{}-B.'.format(num // 10, num % 10) + type
-                path3 = file_path + '/mffw-{}{}-C.'.format(num // 10, num % 10) + type
-                path4 = file_path + '/mffw-{}{}-D.'.format(num // 10, num % 10) + type
+                path1 = file_path + '/mffw-{}{}-1.'.format(num // 10, num % 10) + type
+                path2 = file_path + '/mffw-{}{}-2.'.format(num // 10, num % 10) + type
+                path3 = file_path + '/mffw-{}{}-3.'.format(num // 10, num % 10) + type
+                path4 = file_path + '/mffw-{}{}-4.'.format(num // 10, num % 10) + type
                 img1 = Image.open(path1).convert('RGB')
                 img2 = Image.open(path2).convert('RGB')
                 img3 = Image.open(path3).convert('RGB')
@@ -273,12 +266,12 @@ def fusion_color(file_path, type, save_path, couples, img_nums):
         with torch.no_grad():
             for num in range(1, couples + 1):
                 tic = time.time()
-                path1 = file_path + '/mffw-{}{}-A.'.format(num // 10, num % 10) + type
-                path2 = file_path + '/mffw-{}{}-B.'.format(num // 10, num % 10) + type
-                path3 = file_path + '/mffw-{}{}-C.'.format(num // 10, num % 10) + type
-                path4 = file_path + '/mffw-{}{}-D.'.format(num // 10, num % 10) + type
-                path5 = file_path + '/mffw-{}{}-E.'.format(num // 10, num % 10) + type
-                path6 = file_path + '/mffw-{}{}-F.'.format(num // 10, num % 10) + type
+                path1 = file_path + '/mffw-{}{}-1.'.format(num // 10, num % 10) + type
+                path2 = file_path + '/mffw-{}{}-2.'.format(num // 10, num % 10) + type
+                path3 = file_path + '/mffw-{}{}-3.'.format(num // 10, num % 10) + type
+                path4 = file_path + '/mffw-{}{}-4.'.format(num // 10, num % 10) + type
+                path5 = file_path + '/mffw-{}{}-5.'.format(num // 10, num % 10) + type
+                path6 = file_path + '/mffw-{}{}-6.'.format(num // 10, num % 10) + type
                 img1 = Image.open(path1).convert('RGB')
                 img2 = Image.open(path2).convert('RGB')
                 img3 = Image.open(path3).convert('RGB')
@@ -389,8 +382,8 @@ def fusion_color(file_path, type, save_path, couples, img_nums):
 
 
 if __name__ == '__main__':
-    fusion_color('../Mfif/MFI-WHU', 'jpg', './test_fusion', 30, 2)     # fuse the "MFI-WHU" dataset
-    fusion_color('../Mfif/Lytro', 'jpg', './test_fusion', 20, 2)
-    # fusion_color('../triple_sets', 'jpg', './test_fusion', 9, 3)
+    # fusion_color('../MFI-WHU', 'jpg', './test_fusion', 30, 2)     # fuse the "MFI-WHU" dataset
+    # fusion_color('../Mfif/Lytro_tr', 'jpg', './test_fusion', 20, 2)
+    fusion_color('../Mfif/triple_sets', 'jpg', './test_fusion', 9, 3)
     # fusion_color('../triple_sets/four', 'jpg', './test_fusion', 1, 4)
     # fusion_color('../triple_sets/six', 'jpg', './test_fusion', 1, 6)

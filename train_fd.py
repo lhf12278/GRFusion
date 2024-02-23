@@ -99,8 +99,6 @@ scheduler = CosineAnnealingLR(optimizer, args.epoch)
 L1_fun = nn.L1Loss(reduction='mean')
 Mse_fun = nn.MSELoss()
 Bce_fun = nn.BCELoss()
-criterion1 = nn.BCEWithLogitsLoss()
-criterion4 = TextureLoss()
 
 # ==================
 # Model Training

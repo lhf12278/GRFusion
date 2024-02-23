@@ -61,19 +61,19 @@ def find_unconsist(x, y, z=None, w=None, u=None, v=None):
     if z==None:
         m_sum = x + y
         m_consist = torch.where(m_sum == 1, ones, zeros)
-        m_unconsist = 1/2 * (1 - m_consist)
+        m_unconsist = 1 - m_consist
     elif w==None:
         m_sum = x + y + z
         m_consist = torch.where(m_sum == 1, ones, zeros)
-        m_unconsist = 1/2 * (1 - m_consist)
+        m_unconsist = 1 - m_consist
     elif u==None:
         m_sum = x + y + z + w
         m_consist = torch.where(m_sum == 1, ones, zeros)
-        m_unconsist = 1/2 * (1 - m_consist)
+        m_unconsist = 1 - m_consist
     else:
         m_sum = x + y + z + w + u + v
         m_consist = torch.where(m_sum == 1, ones, zeros)
-        m_unconsist = 1/2 * (1 - m_consist)
+        m_unconsist = 1 - m_consist
 
     return m_unconsist
 
@@ -93,39 +93,39 @@ def combine(img1, img2, mask1, mask2, unconsist, out, img3=None,mask3=None,
     ones = torch.ones(mask1_size, dtype=int).cuda()
 
     if img3==None:
-        mask1 = mask1 + unconsist
-        mask2 = mask2 + unconsist
+        mask1 = mask1 + 5*unconsist
+        mask2 = mask2 + 5*unconsist
         mask1 = torch.where(mask1 == 1, ones, zeros)
         mask2 = torch.where(mask2 == 1, ones, zeros)
         mask3 = unconsist
-        out_fused = mask1 * img1 + mask2 * img2 + (2*mask3) * out
+        out_fused = mask1 * img1 + mask2 * img2 + mask3 * out
     elif img4==None:
-        mask1 = mask1 + unconsist
-        mask2 = mask2 + unconsist
-        mask3 = mask3 + unconsist
+        mask1 = mask1 + 5 * unconsist
+        mask2 = mask2 + 5 * unconsist
+        mask3 = mask3 + 5 * unconsist
         mask1 = torch.where(mask1 == 1, ones, zeros)
         mask2 = torch.where(mask2 == 1, ones, zeros)
         mask3 = torch.where(mask3 == 1, ones, zeros)
         mask4 = unconsist
-        out_fused = mask1 * img1 + mask2 * img2 + mask3 * img3 + (2*mask4) * out
+        out_fused = mask1 * img1 + mask2 * img2 + mask3 * img3 + mask4 * out
     elif img5==None:
-        mask1 = mask1 + unconsist
-        mask2 = mask2 + unconsist
-        mask3 = mask3 + unconsist
-        mask4 = mask4 + unconsist
+        mask1 = mask1 + 5 * unconsist
+        mask2 = mask2 + 5 * unconsist
+        mask3 = mask3 + 5 * unconsist
+        mask4 = mask4 + 5 * unconsist
         mask1 = torch.where(mask1 == 1, ones, zeros)
         mask2 = torch.where(mask2 == 1, ones, zeros)
         mask3 = torch.where(mask3 == 1, ones, zeros)
         mask4 = torch.where(mask4 == 1, ones, zeros)
         mask5 = unconsist
-        out_fused = mask1 * img1 + mask2 * img2 + mask3 * img3 + mask4 * img4 + (2*mask5) * out
+        out_fused = mask1 * img1 + mask2 * img2 + mask3 * img3 + mask4 * img4 + mask5 * out
     else:
-        mask1 = mask1 + unconsist
-        mask2 = mask2 + unconsist
-        mask3 = mask3 + unconsist
-        mask4 = mask4 + unconsist
-        mask5 = mask5 + unconsist
-        mask6 = mask6 + unconsist
+        mask1 = mask1 + 5 * unconsist
+        mask2 = mask2 + 5 * unconsist
+        mask3 = mask3 + 5 * unconsist
+        mask4 = mask4 + 5 * unconsist
+        mask5 = mask5 + 5 * unconsist
+        mask6 = mask6 + 5 * unconsist
         mask1 = torch.where(mask1 == 1, ones, zeros)
         mask2 = torch.where(mask2 == 1, ones, zeros)
         mask3 = torch.where(mask3 == 1, ones, zeros)
@@ -133,7 +133,7 @@ def combine(img1, img2, mask1, mask2, unconsist, out, img3=None,mask3=None,
         mask5 = torch.where(mask5 == 1, ones, zeros)
         mask6 = torch.where(mask6 == 1, ones, zeros)
         mask7 = unconsist
-        out_fused = mask1 * img1 + mask2 * img2 + mask3 * img3 + mask4 * img4 + mask5 * img5 + mask6 * img6 + (2*mask7) * out
+        out_fused = mask1 * img1 + mask2 * img2 + mask3 * img3 + mask4 * img4 + mask5 * img5 + mask6 *img6 + mask7 * out
 
     return out_fused
 
@@ -306,3 +306,57 @@ class Selfpatch(object):
         patches_all = input_windows
         return patches_all
 
+
+def corr_fun(Kernel_tmp, Feature):
+    size = Kernel_tmp.size()
+    CORR = []
+    Kernel = []
+    for i in range(len(Feature)):
+        ker = Kernel_tmp[i:i + 1]
+        fea = Feature[i:i + 1]
+        ker = ker.view(size[1], size[2] * size[3]).transpose(0, 1)
+        ker = ker.unsqueeze(2).unsqueeze(3)
+
+        co = F.conv2d(fea, ker.contiguous())
+        CORR.append(co)
+        ker = ker.unsqueeze(0)
+        Kernel.append(ker)
+    corr = torch.cat(CORR, 0)
+    Kernel = torch.cat(Kernel, 0)
+    return corr, Kernel
+
+class CorrelationLayer(nn.Module):
+    def __init__(self, corr_size, feat_channel):
+        super(CorrelationLayer, self).__init__()
+
+        self.pool_layer = nn.AdaptiveAvgPool2d((corr_size, corr_size))
+
+        self.corr_reduce = nn.Sequential(
+            nn.Conv2d(corr_size * corr_size, feat_channel, kernel_size=1),
+            nn.InstanceNorm2d(feat_channel),
+            nn.ReLU(),
+            nn.Conv2d(feat_channel, feat_channel, 3, padding=1),
+        )
+        self.Dnorm = nn.InstanceNorm2d(feat_channel)
+
+        self.feat_adapt = nn.Sequential(
+            # nn.Conv2d(feat_channel * 2, feat_channel, 1),
+            nn.Conv2d(320, feat_channel, 1),
+            nn.InstanceNorm2d(feat_channel),
+            nn.ReLU(inplace=True)
+        )
+
+    def forward(self, x):
+        # calculate correlation map
+        RGB_feat_downsize = F.normalize(self.pool_layer(x))
+        RGB_feat_norm = F.normalize(x)
+        RGB_corr, _ = corr_fun(RGB_feat_downsize, RGB_feat_norm)
+
+        Red_corr = self.corr_reduce(RGB_corr)
+
+        # beta cond
+        new_feat = torch.cat((x, Red_corr), dim=1)
+        new_feat = self.feat_adapt(new_feat)
+
+        # Depth_feat = self.Dnorm(x[1])
+        return new_feat

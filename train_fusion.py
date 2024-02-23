@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 import torch.optim as optim
 from BaseModle import *
 from FDNet import U_Net1
-from FusionNet import Encoder, Decoder
+from FusionNet1 import Encoder, Decoder
 from Dataloader import *
 from utils import mkdir
 import time
@@ -25,7 +25,7 @@ NWORKERS = 2
 parser = argparse.ArgumentParser(description='models save and load')
 parser.add_argument('--exp_name', type=str, default='Mfif_Fusion', help='Name of the experiment')
 parser.add_argument('--out_path', type=str, default='./experiments', help='log folder path')
-parser.add_argument('--root', type=str, default='../Mfif/Mfif1/data/Train/Fusion_data', help='data path')
+parser.add_argument('--root', type=str, default='../Mfif1/data/Train/Fusion_data', help='data path')
 parser.add_argument('--save_path', type=str, default='./train_fusion', help='models and pics save path')
 parser.add_argument('--save_path_para', type=str, default='./checkpoints_fusion', help='models parameter save')
 parser.add_argument('--ssl_transformations', type=bool, default=True, help='use ssl_transformations or not')
@@ -34,14 +34,15 @@ parser.add_argument('--minirate', type=float, default=0.2, help='to detemine the
 parser.add_argument('--seed', type=int, default=1, help='random seed (default: 1)')
 parser.add_argument('--gpus', type=lambda s: [int(item.strip()) for item in s.split(',')], default='0',
                     help='comma delimited of gpu ids to use. Use "-1" for cpu usage')
-parser.add_argument('--epoch', type=int, default=1000, help='training epoch')
-parser.add_argument('--batch_size', type=int, default=2, help='batchsize')
+parser.add_argument('--epoch', type=int, default=500, help='training epoch')
+parser.add_argument('--batch_size', type=int, default=1, help='batchsize')
 parser.add_argument('--optimizer', type=str, default='ADAM', choices=['ADAM', 'SGD'])
 parser.add_argument('--lr', type=float, default=1e-4, help='learning rate')
 parser.add_argument('--momentum', type=float, default=0.9, help='SGD momentum')
 parser.add_argument('--wd', type=float, default=5e-5, help='weight decay')
 parser.add_argument('--dropout', type=float, default=0.5, help='dropout rate')
-parser.add_argument('--summary_name', type=str, default='Fusion_', help='Name of the tensorboard summmary')
+parser.add_argument('--summary_name', type=str, default='Fusion_',
+                    help='Name of the tensorboard summmary')
 parser.add_argument('--fddetect', type=str, default="./checkpoints/kernel_37.pth",
                     help='the dir of test results to save')
 
@@ -71,6 +72,10 @@ else:
 # ==================
 # Read Data
 # ==================
+train_augmentation = torchvision.transforms.Compose([torchvision.transforms.RandomCrop(256),
+                                                     torchvision.transforms.RandomHorizontalFlip()
+                                                     ])
+
 dataset = Fusion_data(io, args, args.root, transform=None, gray=True, partition='train')
 
 # Creating data indices for training and validation splits:
@@ -210,6 +215,7 @@ for epoch in tqdm(range(args.epoch)):
             fe_ib = Encoder(ib)
             fe = torch.max(fe_ia, fe_ib)
             out = Decoder(fe, unconsis)
+            # out = Decoder(fe)
 
             out_fused = combine(ia, ib, ia_mask_bi, ib_mask_bi, unconsis, out)
 
@@ -228,7 +234,7 @@ for epoch in tqdm(range(args.epoch)):
     # ==================
     # Model Saving
     # ==================
-    if epoch > 450:
+    if epoch > 100:
         torch.save(Encoder.state_dict(),
                    args.save_path_para + '/Encoder_' + '{}.pth'.format(epoch + 1))
         torch.save(Decoder.state_dict(),

@@ -51,7 +51,6 @@ class up_conv(nn.Module):
         z = self.relu(z)
         return z
 
-#三分支
 class MultiKerSize(nn.Module):
     def __init__(self, in_ch):
         super(MultiKerSize, self).__init__()
@@ -92,8 +91,8 @@ class MultiKerSize(nn.Module):
         fe_5x5_a = self.cross(fe_5x5_a_mer, fe_3x3_a_mer) + fe_5x5_a
 
         fe_merge_a = torch.where(abs(fe_3x3_a) - abs(fe_5x5_a) >= 0, fe_3x3_a, fe_5x5_a)
-        return fe_merge_a
 
+        return fe_merge_a
 
 class Alp(nn.Module):
     def __init__(self, in_ch):
